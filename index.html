@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>eTalking 業務工具箱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F2F8;--sf:#fff;--sf2:#F5F6FA;
+  --t1:#1C2340;--t2:#6B7A99;--t3:#9AA3B8;
+  --bd:#DDE2F0;--bd2:#C5CFEA;
+  --blue:#4F6EF7;--bbg:#EEF2FF;--blue2:#3A5AE8;--blt:#C5D5FF;
+  --green:#1E8449;--gbg:#EAFAF1;
+  --sidebar-w:200px;
+  --topbar-h:52px;
+  --r:8px;--rlg:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;display:flex;flex-direction:column}
+
+/* ── topbar ── */
+.topbar{
+  height:var(--topbar-h);
+  background:var(--sf);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  flex-shrink:0;
+  z-index:10;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+}
+.brand-logo{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;letter-spacing:-.03em;
+}
+.brand-name{font-size:13px;font-weight:700;color:var(--t1);letter-spacing:.03em}
+.brand-sub{font-size:10px;color:var(--t3);font-weight:400;margin-left:2px}
+.clock{font-size:12px;font-weight:500;color:var(--t2);background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:5px 13px;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+
+/* ── layout ── */
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* ── sidebar ── */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--sf);
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  flex-shrink:0;
+  overflow-y:auto;
+}
+.sidebar-section{padding:16px 12px 6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  border-radius:0;
+  transition:background .12s,color .12s;
+  border-left:3px solid transparent;
+  position:relative;
+  user-select:none;
+}
+.nav-item:hover{background:var(--bbg);color:var(--t1)}
+.nav-item.on{
+  background:var(--bbg);
+  border-left-color:var(--blue);
+  color:var(--blue);
+}
+.nav-icon{
+  width:30px;height:30px;border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;
+  background:var(--sf2);border:1px solid var(--bd);
+  transition:all .12s;
+}
+.nav-item.on .nav-icon{background:var(--bbg);border-color:var(--blt)}
+.nav-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.nav-label{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3}
+.nav-item.on .nav-label{color:var(--blue)}
+.nav-desc{font-size:10px;color:var(--t3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.sidebar-footer{margin-top:auto;padding:14px 12px;border-top:1px solid var(--bd)}
+.sf-label{font-size:10px;color:var(--t3);text-align:center;line-height:1.6}
+
+/* ── iframe area ── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+.iframe-wrap{flex:1;position:relative;overflow:hidden}
+.tool-iframe{
+  width:100%;height:100%;
+  border:none;
+  display:none;
+  background:var(--sf);
+}
+.tool-iframe.on{display:block}
+
+/* ── empty state ── */
+.empty-state{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;
+  color:var(--t3);
+}
+.empty-state.hidden{display:none}
+.es-icon{font-size:40px;opacity:.4}
+.es-title{font-size:14px;font-weight:600;color:var(--t2)}
+.es-sub{font-size:12px;color:var(--t3);text-align:center;line-height:1.7;max-width:240px}
+
+/* ── iframe loading indicator ── */
+.iframe-loading{
+  position:absolute;top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--blue) 0%,var(--blt) 100%);
+  transform-origin:left;
+  transform:scaleX(0);
+  transition:transform .4s ease;
+  opacity:0;
+}
+.iframe-loading.active{opacity:1;animation:loadbar 1.2s ease-in-out infinite alternate}
+@keyframes loadbar{from{transform:scaleX(.1)}to{transform:scaleX(.9)}}
+
+/* ── tab bar (top of content) ── */
+.tab-bar{
+  height:38px;
+  background:var(--sf2);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;padding:0 16px;gap:6px;
+  flex-shrink:0;
+}
+.tab-bar-label{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
+.tab-chip{
+  padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:500;color:var(--t2);
+  background:var(--sf);border:1px solid var(--bd);
+  cursor:pointer;transition:all .12s;
+}
+.tab-chip:hover{border-color:var(--bd2);color:var(--t1)}
+.tab-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+.open-btn{
+  margin-left:auto;
+  padding:4px 12px;border-radius:var(--r);
+  font-size:11px;font-weight:500;color:var(--t2);
+  background:var(--sf);border:1px solid var(--bd);
+  cursor:pointer;transition:all .12s;
+  font-family:'Noto Sans TC',sans-serif;
+  text-decoration:none;display:flex;align-items:center;gap:4px;
+}
+.open-btn:hover{background:var(--bbg);color:var(--blue);border-color:var(--blt)}
+
+/* scroll in sidebar */
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- topbar -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">ET</div>
+    <div>
+      <span class="brand-name">eTalking</span>
+      <span class="brand-sub">業務工具箱</span>
+    </div>
+  </div>
+  <div class="clock" id="clock">--:--:--</div>
+</div>
+
+<!-- layout -->
+<div class="layout">
+
+  <!-- sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">工具導航</div>
+
+    <div class="nav-item on" data-idx="0" onclick="switchTool(0)">
+      <div class="nav-icon">📞</div>
+      <div class="nav-text">
+        <span class="nav-label">通話語 KYC</span>
+        <span class="nav-desc">模板產生器</span>
+      </div>
+    </div>
+
+    <div class="nav-item" data-idx="1" onclick="switchTool(1)">
+      <div class="nav-icon">📋</div>
+      <div class="nav-text">
+        <span class="nav-label">Demo 通知</span>
+        <span class="nav-desc">模板產生器</span>
+      </div>
+    </div>
+
+    <div class="nav-item" data-idx="2" onclick="switchTool(2)">
+      <div class="nav-icon">📊</div>
+      <div class="nav-text">
+        <span class="nav-label">課程方案</span>
+        <span class="nav-desc">導航計算機</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sf-label">eTalking Sales Tools<br>Wolf · 2025</div>
+    </div>
+  </div>
+
+  <!-- content -->
+  <div class="content">
+    <!-- top tab bar -->
+    <div class="tab-bar">
+      <span class="tab-bar-label">工具</span>
+      <span class="tab-chip on" data-idx="0" onclick="switchTool(0)">通話語 KYC</span>
+      <span class="tab-chip" data-idx="1" onclick="switchTool(1)">Demo 通知</span>
+      <span class="tab-chip" data-idx="2" onclick="switchTool(2)">課程方案</span>
+      <a class="open-btn" id="open-link" href="https://wolfhuang0105.github.io/ET-CallOut-Templates" target="_blank">
+        ↗ 另開頁籤
+      </a>
+    </div>
+
+    <!-- loading bar -->
+    <div class="iframe-loading" id="loading-bar"></div>
+
+    <!-- iframe area -->
+    <div class="iframe-wrap">
+      <!-- empty state (hidden when a tool is active) -->
+      <div class="empty-state hidden" id="empty-state">
+        <div class="es-icon">🛠</div>
+        <div class="es-title">選擇左側工具開始使用</div>
+        <div class="es-sub">三個業務工具<br>通話語 KYC、Demo 通知、課程方案導航</div>
+      </div>
+
+      <iframe class="tool-iframe on" id="iframe-0"
+        src="https://wolfhuang0105.github.io/ET-CallOut-Templates"
+        title="通話語 KYC 模板"></iframe>
+
+      <iframe class="tool-iframe" id="iframe-1"
+        src=""
+        data-src="https://wolfhuang0105.github.io/ET-Demo-TeacherFinding"
+        title="Demo 通知模板產生器"></iframe>
+
+      <iframe class="tool-iframe" id="iframe-2"
+        src=""
+        data-src="https://wolfhuang0105.github.io/et-kids-quo-cal/"
+        title="課程方案導航"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── clock ── */
+function tick(){
+  const now=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('clock').textContent=
+    `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+}
+tick(); setInterval(tick,1000);
+
+/* ── tool config ── */
+const TOOLS=[
+  {label:'通話語 KYC 模板',url:'https://wolfhuang0105.github.io/ET-CallOut-Templates'},
+  {label:'Demo 通知模板產生器',url:'https://wolfhuang0105.github.io/ET-Demo-TeacherFinding'},
+  {label:'課程方案導航',url:'https://wolfhuang0105.github.io/et-kids-quo-cal/'},
+];
+
+let current=0;
+const loaded=new Set([0]); // iframe 0 pre-loaded
+
+function switchTool(idx){
+  if(idx===current)return;
+  current=idx;
+
+  // nav items
+  document.querySelectorAll('.nav-item').forEach((el,i)=>{
+    el.classList.toggle('on',i===idx);
+  });
+  // tab chips
+  document.querySelectorAll('.tab-chip').forEach((el,i)=>{
+    el.classList.toggle('on',i===idx);
+  });
+  // open link
+  document.getElementById('open-link').href=TOOLS[idx].url;
+
+  // lazy-load iframe
+  const iframe=document.getElementById('iframe-'+idx);
+  if(!loaded.has(idx)){
+    showLoading();
+    iframe.src=iframe.dataset.src;
+    iframe.onload=()=>{hideLoading()};
+    loaded.add(idx);
+  }
+
+  // show/hide iframes
+  document.querySelectorAll('.tool-iframe').forEach((f,i)=>{
+    f.classList.toggle('on',i===idx);
+  });
+}
+
+/* ── loading bar ── */
+function showLoading(){
+  const b=document.getElementById('loading-bar');
+  b.classList.add('active');
+}
+function hideLoading(){
+  const b=document.getElementById('loading-bar');
+  b.classList.remove('active');
+}
+
+// handle first iframe load
+document.getElementById('iframe-0').onload=()=>hideLoading();
+</script>
+</body>
+</html>
