@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>eTalking 業務工具箱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F2F8;--sf:#fff;--sf2:#F5F6FA;
+  --t1:#1C2340;--t2:#6B7A99;--t3:#9AA3B8;
+  --bd:#DDE2F0;--bd2:#C5CFEA;
+  --blue:#4F6EF7;--bbg:#EEF2FF;--blue2:#3A5AE8;--blt:#C5D5FF;
+  --green:#1E8449;--gbg:#EAFAF1;
+  --amber:#B45309;--abg:#FEF3C7;--alt:#FDE68A;
+  --sidebar-w:200px;
+  --sidebar-col-w:56px;
+  --topbar-h:52px;
+  --r:8px;--rlg:12px;
+  --sb-ease:.22s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;display:flex;flex-direction:column}
+
+/* ── topbar ── */
+.topbar{height:var(--topbar-h);background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{width:28px;height:28px;border-radius:6px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:-.03em}
+.brand-name{font-size:13px;font-weight:700;color:var(--t1);letter-spacing:.03em}
+.brand-sub{font-size:10px;color:var(--t3);font-weight:400;margin-left:2px}
+.clock{font-size:12px;font-weight:500;color:var(--t2);background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:5px 13px;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+
+/* ── layout ── */
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* ══════════════════════════
+   SIDEBAR
+══════════════════════════ */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--sf);
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  flex-shrink:0;overflow:hidden;
+  transition:width var(--sb-ease);
+}
+.sidebar.col{width:var(--sidebar-col-w)}
+
+/* toggle header */
+.sb-head{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 8px;flex-shrink:0}
+.sb-head-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);white-space:nowrap;overflow:hidden;transition:opacity var(--sb-ease),max-width var(--sb-ease);max-width:120px;opacity:1}
+.sidebar.col .sb-head-label{opacity:0;max-width:0}
+.sb-toggle{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--sf2);border:1px solid var(--bd);cursor:pointer;font-size:12px;color:var(--t3);transition:all .12s;user-select:none;line-height:1}
+.sb-toggle:hover{background:var(--bbg);border-color:var(--blt);color:var(--blue)}
+
+/* nav items — expanded */
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 13px;cursor:pointer;
+  border-left:3px solid transparent;
+  transition:background .12s,padding var(--sb-ease),flex-direction var(--sb-ease),align-items var(--sb-ease),gap var(--sb-ease);
+  position:relative;user-select:none;overflow:hidden;
+}
+.nav-item:hover{background:var(--bbg)}
+.nav-item.on{background:var(--bbg);border-left-color:var(--blue)}
+
+/* nav items — collapsed */
+.sidebar.col .nav-item{flex-direction:column;gap:3px;padding:8px 4px;align-items:center}
+.sidebar.col .nav-item.on{border-left-color:var(--blue)}
+
+.nav-icon{width:30px;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--sf2);border:1px solid var(--bd);transition:all .12s}
+.nav-item.on .nav-icon{background:var(--bbg);border-color:var(--blt)}
+
+/* full text */
+.nav-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sidebar.col .nav-text{display:none}
+.nav-label{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3}
+.nav-item.on .nav-label{color:var(--blue)}
+.nav-desc{font-size:10px;color:var(--t3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* short label (collapsed only) */
+.nav-short{display:none;font-size:9px;font-weight:700;color:var(--t2);text-align:center;line-height:1.2;max-width:50px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar.col .nav-short{display:block}
+.nav-item.on .nav-short{color:var(--blue)}
+
+/* settings item */
+.nav-item.settings-item{border-top:1px solid var(--bd);margin-top:auto}
+.nav-item.settings-item.on{background:var(--abg);border-left-color:var(--amber)}
+.nav-item.settings-item.on .nav-label,.nav-item.settings-item.on .nav-short{color:var(--amber)}
+.nav-item.settings-item.on .nav-icon{background:var(--abg);border-color:var(--alt)}
+
+/* footer */
+.sb-footer{padding:8px 10px 12px;border-top:1px solid var(--bd);flex-shrink:0}
+.sb-footer-label{font-size:10px;color:var(--t3);text-align:center;line-height:1.6;white-space:nowrap;overflow:hidden;transition:opacity var(--sb-ease)}
+.sidebar.col .sb-footer-label{opacity:0}
+
+/* ── content ── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.iframe-wrap{flex:1;position:relative;overflow:hidden}
+.tool-iframe{width:100%;height:100%;border:none;display:none;background:var(--sf)}
+.tool-iframe.on{display:block}
+
+/* empty state */
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--t3)}
+.empty-state.hidden{display:none}
+.es-icon{font-size:40px;opacity:.4}
+.es-title{font-size:14px;font-weight:600;color:var(--t2)}
+.es-sub{font-size:12px;color:var(--t3);text-align:center;line-height:1.7;max-width:240px}
+
+/* loading bar */
+.iframe-loading{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue) 0%,var(--blt) 100%);transform-origin:left;transform:scaleX(0);transition:transform .4s ease;opacity:0}
+.iframe-loading.active{opacity:1;animation:loadbar 1.2s ease-in-out infinite alternate}
+@keyframes loadbar{from{transform:scaleX(.1)}to{transform:scaleX(.9)}}
+
+/* tab bar */
+.tab-bar{height:38px;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:6px;flex-shrink:0;overflow-x:auto}
+.tab-bar::-webkit-scrollbar{height:0}
+.tab-bar-label{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-right:4px;flex-shrink:0}
+.tab-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;color:var(--t2);background:var(--sf);border:1px solid var(--bd);cursor:pointer;transition:all .12s;white-space:nowrap;flex-shrink:0}
+.tab-chip:hover{border-color:var(--bd2);color:var(--t1)}
+.tab-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.open-btn{margin-left:auto;padding:4px 12px;border-radius:var(--r);font-size:11px;font-weight:500;color:var(--t2);background:var(--sf);border:1px solid var(--bd);cursor:pointer;transition:all .12s;font-family:'Noto Sans TC',sans-serif;text-decoration:none;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.open-btn:hover{background:var(--bbg);color:var(--blue);border-color:var(--blt)}
+
+/* ══════════════════════════
+   SETTINGS PANEL
+══════════════════════════ */
+.settings-panel{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:20;overflow:hidden}
+.settings-panel.on{display:flex}
+.sp-header{padding:14px 20px 12px;border-bottom:1px solid var(--bd);background:var(--sf);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sp-title{font-size:13px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:8px}
+.sp-subtitle{font-size:11px;color:var(--t3);margin-top:2px}
+.sp-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:16px}
+.sp-info{background:var(--abg);border:1px solid var(--alt);border-radius:var(--r);padding:10px 14px;font-size:11px;color:var(--amber);line-height:1.7}
+.sp-info strong{font-weight:700}
+.sp-section{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rlg);overflow:hidden}
+.sp-section-head{padding:10px 16px;border-bottom:1px solid var(--bd);font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px;background:var(--sf2)}
+.sp-section-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.json-textarea{width:100%;min-height:300px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.65;color:var(--t1);background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;resize:vertical;outline:none;transition:border-color .12s}
+.json-textarea:focus{border-color:var(--blue)}
+.sp-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sp-btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bd);font-family:'Noto Sans TC',sans-serif;transition:all .12s;background:var(--sf);color:var(--t2)}
+.sp-btn:hover{background:var(--bbg);border-color:var(--blt);color:var(--blue)}
+.sp-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sp-btn.primary:hover{background:var(--blue2);border-color:var(--blue2)}
+.sp-btn.danger{color:#B91C1C;border-color:#FECACA}
+.sp-btn.danger:hover{background:#FEF2F2;border-color:#FCA5A5}
+.sp-status{font-size:11px;color:var(--t3);margin-left:auto}
+.sp-status.ok{color:var(--green)}
+.sp-status.err{color:#B91C1C}
+.schema-hint{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 14px}
+.schema-hint pre{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);line-height:1.7;white-space:pre-wrap}
+
+/* icon sheet */
+.icon-sheet-cats{display:flex;flex-direction:column;gap:12px}
+.icon-cat-label{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.icon-grid{display:flex;flex-wrap:wrap;gap:4px}
+.icon-chip{width:34px;height:34px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;background:var(--sf2);border:1px solid var(--bd);transition:all .12s;user-select:none}
+.icon-chip:hover{background:var(--bbg);border-color:var(--blt);transform:scale(1.12)}
+.icon-chip:active{transform:scale(.95)}
+.icon-chip.copied{background:var(--gbg);border-color:#86EFAC}
+.icon-copy-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--t1);color:#fff;font-size:11px;font-weight:500;padding:6px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .15s;z-index:999;white-space:nowrap}
+.icon-copy-toast.show{opacity:1}
+
+/* scrollbars */
+.sp-body::-webkit-scrollbar{width:4px}
+.sp-body::-webkit-scrollbar-track{background:transparent}
+.sp-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+
+/* ── fetch warning banner ── */
+.fetch-warn{
+  display:none;
+  background:#FEF2F2;border-bottom:1px solid #FECACA;
+  padding:5px 20px;
+  font-size:11px;color:#B91C1C;
+  align-items:center;gap:8px;
+  flex-shrink:0;
+}
+.fetch-warn.on{display:flex}
+.fetch-warn-icon{font-size:13px;flex-shrink:0}
+.fetch-warn-msg{flex:1;line-height:1.5}
+.fetch-warn-msg code{font-family:'JetBrains Mono',monospace;font-size:10px;background:#FEE2E2;padding:1px 5px;border-radius:3px}
+.fetch-warn-close{cursor:pointer;font-size:13px;color:#EF4444;flex-shrink:0;line-height:1;padding:2px 4px;border-radius:4px;transition:background .12s}
+.fetch-warn-close:hover{background:#FECACA}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">ET</div>
+    <div>
+      <span class="brand-name">eTalking</span>
+      <span class="brand-sub">業務工具箱</span>
+    </div>
+  </div>
+  <div class="clock" id="clock">--:--:--</div>
+</div>
+
+<!-- fetch 失敗警告 banner -->
+<div class="fetch-warn" id="fetch-warn">
+  <span class="fetch-warn-icon">⚠️</span>
+  <span class="fetch-warn-msg" id="fetch-warn-msg"></span>
+  <span class="fetch-warn-close" onclick="document.getElementById('fetch-warn').classList.remove('on')" title="關閉">✕</span>
+</div>
+
+<div class="layout">
+
+  <div class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <span class="sb-head-label">工具導航</span>
+      <div class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()">‹</div>
+    </div>
+
+    <div id="nav-list"></div>
+
+    <div class="nav-item settings-item" id="nav-settings" onclick="toggleSettings()">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-text">
+        <span class="nav-label">工具設定</span>
+        <span class="nav-desc">JSON 設定管理</span>
+      </div>
+      <span class="nav-short">設定</span>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-footer-label">eTalking Sales Tools<br>Wolf · 2025</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tab-bar">
+      <span class="tab-bar-label">工具</span>
+      <span id="tab-list"></span>
+      <a class="open-btn" id="open-link" href="#" target="_blank">↗ 另開頁籤</a>
+    </div>
+
+    <div class="iframe-loading" id="loading-bar"></div>
+
+    <div class="iframe-wrap">
+      <div class="empty-state hidden" id="empty-state">
+        <div class="es-icon">🛠</div>
+        <div class="es-title">選擇左側工具開始使用</div>
+        <div class="es-sub" id="es-sub-text"></div>
+      </div>
+      <div id="iframe-container"></div>
+
+      <div class="settings-panel" id="settings-panel">
+        <div class="sp-header">
+          <div>
+            <div class="sp-title">⚙️ 工具設定 JSON 管理</div>
+            <div class="sp-subtitle">修改後點「套用設定」即時生效，重整頁面後依然保留</div>
+          </div>
+        </div>
+        <div class="sp-body">
+
+          <div class="sp-info">
+            <strong>靜態預設 JSON</strong>（出廠設定）來自同級目錄的 <code>tools.json</code>，修改該檔即可更新預設值。<br>
+            自訂設定儲存於瀏覽器 <code>localStorage</code>（優先於 tools.json）。<br>
+            「恢復預設」會清除 localStorage 並重新套用 tools.json 的內容。
+          </div>
+
+          <div class="sp-section">
+            <div class="sp-section-head">📝 目前設定（可直接編輯）</div>
+            <div class="sp-section-body">
+              <textarea class="json-textarea" id="json-textarea" spellcheck="false"></textarea>
+              <div class="sp-actions">
+                <button class="sp-btn primary" onclick="applyJSON()">✔ 套用設定</button>
+                <button class="sp-btn" onclick="formatJSON()">🗂 格式化</button>
+                <button class="sp-btn danger" onclick="restoreDefaults()">↺ 恢復預設</button>
+                <span class="sp-status" id="apply-status"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sp-section">
+            <div class="sp-section-head">📤 匯入 / 匯出</div>
+            <div class="sp-section-body">
+              <div class="sp-actions">
+                <button class="sp-btn" onclick="exportJSON()">⬇ 匯出 JSON 檔案</button>
+                <button class="sp-btn" onclick="document.getElementById('import-file').click()">⬆ 匯入 JSON 檔案</button>
+                <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+                <span class="sp-status" id="import-status"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sp-section">
+            <div class="sp-section-head">📋 JSON 欄位說明</div>
+            <div class="sp-section-body">
+              <div class="schema-hint"><pre>{
+  "tools": [
+    {
+      "icon":       "📞",         // 側欄圖示（emoji）
+      "label":      "通話語 KYC", // 側欄主標題 / Tab 名稱
+      "shortLabel": "Call",       // ★ 收合時顯示的簡稱
+      "desc":       "模板產生器", // 側欄副標題
+      "url":        "https://..."  // 工具頁面 URL
+    }
+  ]
+}</pre></div>
+            </div>
+          </div>
+
+          <div class="sp-section">
+            <div class="sp-section-head">🎨 Icon 大補帖 <span style="font-weight:400;font-size:10px;color:var(--t3);margin-left:6px;text-transform:none;letter-spacing:0">點擊即複製</span></div>
+            <div class="sp-section-body">
+              <div class="icon-sheet-cats" id="icon-sheet"></div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /settings-panel -->
+    </div><!-- /iframe-wrap -->
+  </div><!-- /content -->
+</div><!-- /layout -->
+
+<div class="icon-copy-toast" id="copy-toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   CONFIG — 從同級目錄 tools.json fetch 作為靜態預設
+   優先順序：localStorage > tools.json
+════════════════════════════════════════════ */
+const STATIC_JSON_PATH = './tools.json';   // 靜態定義檔路徑
+const LS_KEY = 'et_tools_config';
+const LS_SB  = 'et_sidebar_col';
+
+let DEFAULT_TOOLS = null;   // 由 fetch 填入，恢復預設時使用
+let CONFIG        = null;
+let current       = 0;
+let spOpen        = false;
+let sbCol         = localStorage.getItem(LS_SB) === '1';
+const loaded      = new Set();
+
+function loadConfigFromLS() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && Array.isArray(p.tools) && p.tools.length) return p;
+    }
+  } catch(e) {}
+  return null;
+}
+function saveConfig(cfg) { localStorage.setItem(LS_KEY, JSON.stringify(cfg, null, 2)) }
+
+/* clock */
+function tick() {
+  const now = new Date(), p = n => String(n).padStart(2,'0');
+  document.getElementById('clock').textContent =
+    `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+}
+tick(); setInterval(tick, 1000);
+
+/* ══════════════════
+   SIDEBAR COLLAPSE
+══════════════════ */
+function toggleSidebar() {
+  sbCol = !sbCol;
+  localStorage.setItem(LS_SB, sbCol ? '1' : '0');
+  applySB();
+}
+function applySB() {
+  const sb  = document.getElementById('sidebar');
+  const btn = document.getElementById('sb-toggle');
+  sb.classList.toggle('col', sbCol);
+  btn.textContent = sbCol ? '›' : '‹';
+  btn.title = sbCol ? '展開側欄' : '收合側欄';
+}
+
+/* ══════════════════
+   RENDER
+══════════════════ */
+function render() {
+  const tools = CONFIG.tools;
+
+  document.getElementById('nav-list').innerHTML = tools.map((t,i) => `
+    <div class="nav-item${i===current?' on':''}" onclick="switchTool(${i})">
+      <div class="nav-icon">${t.icon}</div>
+      <div class="nav-text">
+        <span class="nav-label">${t.label}</span>
+        <span class="nav-desc">${t.desc}</span>
+      </div>
+      <span class="nav-short">${t.shortLabel||t.label}</span>
+    </div>`).join('');
+
+  document.getElementById('tab-list').innerHTML = tools.map((t,i) =>
+    `<span class="tab-chip${i===current?' on':''}" onclick="switchTool(${i})">${t.label}</span>`
+  ).join('');
+
+  document.getElementById('iframe-container').innerHTML = tools.map((t,i) => `
+    <iframe
+      class="tool-iframe${i===current?' on':''}"
+      id="iframe-${i}"
+      src="${i===0?t.url:''}"
+      data-src="${t.url}"
+      title="${t.label}"></iframe>`).join('');
+
+  loaded.clear();
+  if (tools.length) loaded.add(0);
+  const f0 = document.getElementById('iframe-0');
+  if (f0) f0.onload = hideLoading;
+
+  updateOpenLink();
+  document.getElementById('es-sub-text').textContent = tools.map(t=>t.label).join('、');
+  applySB();
+}
+
+function updateOpenLink() {
+  const t = CONFIG.tools[current];
+  document.getElementById('open-link').href = t ? t.url : '#';
+}
+
+function switchTool(idx) {
+  if (spOpen) closeSettings();
+  if (idx === current) return;
+  current = idx;
+  document.querySelectorAll('#nav-list .nav-item').forEach((el,i) => el.classList.toggle('on', i===idx));
+  document.querySelectorAll('#tab-list .tab-chip').forEach((el,i) => el.classList.toggle('on', i===idx));
+  updateOpenLink();
+  const iframe = document.getElementById('iframe-'+idx);
+  if (iframe && !loaded.has(idx)) {
+    showLoading();
+    iframe.src = iframe.dataset.src;
+    iframe.onload = hideLoading;
+    loaded.add(idx);
+  }
+  document.querySelectorAll('.tool-iframe').forEach((f,i) => f.classList.toggle('on', i===idx));
+}
+
+function showLoading() { document.getElementById('loading-bar').classList.add('active') }
+function hideLoading()  { document.getElementById('loading-bar').classList.remove('active') }
+
+/* ══════════════════
+   SETTINGS
+══════════════════ */
+function toggleSettings() { spOpen ? closeSettings() : openSettings() }
+function openSettings() {
+  spOpen = true;
+  document.getElementById('settings-panel').classList.add('on');
+  document.getElementById('nav-settings').classList.add('on');
+  document.getElementById('json-textarea').value = JSON.stringify(CONFIG, null, 2);
+  clearSt();
+}
+function closeSettings() {
+  spOpen = false;
+  document.getElementById('settings-panel').classList.remove('on');
+  document.getElementById('nav-settings').classList.remove('on');
+}
+function clearSt() { setSt('apply-status','',''); setSt('import-status','','') }
+function setSt(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'sp-status'+(type?' '+type:'');
+}
+
+function formatJSON() {
+  const ta = document.getElementById('json-textarea');
+  try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); setSt('apply-status','✔ 格式化完成','ok') }
+  catch(e) { setSt('apply-status','✘ JSON 格式錯誤','err') }
+}
+
+function applyJSON() {
+  let parsed;
+  try { parsed = JSON.parse(document.getElementById('json-textarea').value) }
+  catch(e) { setSt('apply-status','✘ JSON 格式錯誤，請檢查','err'); return }
+  if (!parsed?.tools?.length) { setSt('apply-status','✘ 缺少 tools 陣列或為空','err'); return }
+  CONFIG = parsed; current = 0;
+  saveConfig(CONFIG); render();
+  setSt('apply-status','✔ 已套用並儲存','ok');
+}
+
+function restoreDefaults() {
+  if (!confirm('確定要恢復預設工具設定？自訂設定將被清除。')) return;
+  localStorage.removeItem(LS_KEY);
+  CONFIG = JSON.parse(JSON.stringify(DEFAULT_TOOLS));
+  current = 0; render();
+  document.getElementById('json-textarea').value = JSON.stringify(CONFIG, null, 2);
+  setSt('apply-status','✔ 已恢復預設設定','ok');
+}
+
+function exportJSON() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(CONFIG,null,2)],{type:'application/json'}));
+  a.download = 'et-tools-config.json'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function importJSON(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const p = JSON.parse(ev.target.result);
+      if (!p?.tools?.length) { setSt('import-status','✘ 格式不符，缺少 tools 陣列','err'); return }
+      document.getElementById('json-textarea').value = JSON.stringify(p, null, 2);
+      setSt('import-status','✔ 已載入，確認後點「套用設定」','ok');
+    } catch(err) { setSt('import-status','✘ 檔案 JSON 格式錯誤','err') }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ══════════════════
+   ICON 大補帖
+══════════════════ */
+const ICON_CATS = [
+  {cat:'📞 通話 / 銷售', icons:['📞','📱','☎️','📲','🤙','💬','🗣️','👂','📣','📢','🎙️','🔔','🔕','📡']},
+  {cat:'📋 文件 / 資料', icons:['📋','📄','📃','📑','🗒️','🗂️','📁','📂','🗃️','📊','📈','📉','📝','✏️','🖊️','🖋️']},
+  {cat:'✅ 確認 / 進度', icons:['✅','☑️','✔️','🔖','🏷️','🎯','🚩','🏁','⭐','🌟','💡','🔑','🗝️','🔓','🔒']},
+  {cat:'👤 人員 / 角色', icons:['👤','👥','🧑‍💼','👨‍💼','👩‍💼','🎓','🧑‍🏫','👨‍🏫','👶','🧒','👦','👧','🤝']},
+  {cat:'🏫 課程 / 教育', icons:['🏫','📚','📖','📓','📒','📔','📗','📘','📙','🖍️','🖌️','🎨','🔬','🔭','🧩','🎓','🏆']},
+  {cat:'💰 金錢 / 方案', icons:['💰','💵','💴','💸','💳','🏦','💎','🛒','🎁','🎀','🏷️','📦','🛍️','💼','🤑','🪙']},
+  {cat:'⚙️ 設定 / 工具', icons:['⚙️','🔧','🔨','🛠️','🔩','🪛','🪚','🖥️','💻','🖨️','⌨️','🖱️','📺','📷','🎥','🔍','🔎']},
+  {cat:'🌐 網路 / 連結', icons:['🌐','🔗','📎','🖇️','📌','📍','🗺️','🏠','🏢','🌍','🌏','🌎','✈️','🚀','📮']},
+  {cat:'🎉 狀態 / 心情', icons:['🎉','🎊','🥳','😊','😃','🤩','🙌','👏','💪','🫶','❤️','🧡','💛','💚','💙','💜','⚡','🔥','💫','✨','🌈']}
+];
+
+function renderIconSheet() {
+  document.getElementById('icon-sheet').innerHTML = ICON_CATS.map(c => `
+    <div>
+      <div class="icon-cat-label">${c.cat}</div>
+      <div class="icon-grid">${c.icons.map(ic =>
+        `<div class="icon-chip" title="${ic}" onclick="copyIcon('${ic}',this)">${ic}</div>`
+      ).join('')}</div>
+    </div>`).join('');
+}
+
+let toastTimer = null;
+function copyIcon(icon, el) {
+  navigator.clipboard.writeText(icon).then(() => {
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 600);
+    const toast = document.getElementById('copy-toast');
+    toast.textContent = `已複製 ${icon}  貼到 JSON 的 "icon" 欄位即可`;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+
+/* ════════════════════════════════════════════
+   ASYNC INIT — fetch tools.json → then render
+════════════════════════════════════════════ */
+(async function init() {
+  try {
+    const res = await fetch(STATIC_JSON_PATH);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DEFAULT_TOOLS = await res.json();
+  } catch(e) {
+    const msg = e?.message ?? String(e);
+    const el  = document.getElementById('fetch-warn');
+    document.getElementById('fetch-warn-msg').innerHTML =
+      `無法載入 <code>${STATIC_JSON_PATH}</code>（${msg}）— 已使用內嵌備援設定，工具正常運作。請確認 tools.json 與 index.html 在同一目錄。`;
+    el.classList.add('on');
+    // 內嵌備援：確保即使 fetch 失敗頁面也能運作
+    DEFAULT_TOOLS = {
+      tools: [
+        { icon:"📞", label:"通話語 KYC",      shortLabel:"Call",  desc:"模板產生器", url:"https://wolfhuang0105.github.io/ET-CallOut-Templates"       },
+        { icon:"📋", label:"Demo 通知",        shortLabel:"Demo",  desc:"模板產生器", url:"https://wolfhuang0105.github.io/ET-Demo-TeacherFinding"     },
+        { icon:"📊", label:"課程方案",          shortLabel:"方案",  desc:"導航計算機", url:"https://wolfhuang0105.github.io/et-kids-quo-cal/"            },
+        { icon:"✅", label:"Demo後 方案確認卡", shortLabel:"確認卡", desc:"資訊確認模板",url:"https://wolfhuang0105.github.io/ET-InfoTemplates-AfterDemos/" }
+      ]
+    };
+  }
+
+  // localStorage 優先；無則使用 tools.json
+  CONFIG = loadConfigFromLS() ?? JSON.parse(JSON.stringify(DEFAULT_TOOLS));
+
+  render();
+  renderIconSheet();
+})();
+</script>
+</body>
+</html>
