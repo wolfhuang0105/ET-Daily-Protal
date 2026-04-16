@@ -1,32 +1,39 @@
 {
   "tools": [
     {
-      "icon":       "📞",
-      "label":      "通話 與 KYC",
+      "icon": "📞",
+      "label": "通話 與 KYC",
       "shortLabel": "Call",
-      "desc":       "模板產生器",
-      "url":        "https://wolfhuang0105.github.io/ET-CallOut-Templates"
+      "desc": "模板產生器",
+      "url": "https://wolfhuang0105.github.io/ET-CallOut-Templates"
+    },
+	{
+      "icon": "🎯",
+      "label": "核心競爭優勢",
+      "shortLabel": "競爭核心",
+      "desc": "對照表與競品分析",
+      "url": "https://wolfhuang0105.github.io/ET-KeyValues"
     },
     {
-      "icon":       "📋",
-      "label":      "Demo 通知",
+      "icon": "📋",
+      "label": "Demo 通知",
       "shortLabel": "Demo",
-      "desc":       "模板產生器",
-      "url":        "https://wolfhuang0105.github.io/ET-Demo-TeacherFinding"
+      "desc": "模板產生器",
+      "url": "https://wolfhuang0105.github.io/ET-Demo-TeacherFinding"
     },
     {
-      "icon":       "📊",
-      "label":      "課程方案",
+      "icon": "📊",
+      "label": "課程方案",
       "shortLabel": "方案",
-      "desc":       "導航計算機",
-      "url":        "https://wolfhuang0105.github.io/et-kids-quo-cal/"
+      "desc": "導航計算機",
+      "url": "https://wolfhuang0105.github.io/et-kids-quo-cal/"
     },
     {
-      "icon":       "✅",
-      "label":      "Demo後 方案確認卡",
+      "icon": "✅",
+      "label": "Demo後 方案確認卡",
       "shortLabel": "確認卡",
-      "desc":       "資訊確認模板",
-      "url":        "https://wolfhuang0105.github.io/ET-InfoTemplates-AfterDemos/"
+      "desc": "資訊確認模板",
+      "url": "https://wolfhuang0105.github.io/ET-InfoTemplates-AfterDemos/"
     }
   ]
 }
