@@ -7,7 +7,7 @@
       "desc": "模板產生器",
       "url": "https://wolfhuang0105.github.io/ET-CallOut-Templates"
     },
-	{
+    {
       "icon": "🎯",
       "label": "核心競爭優勢",
       "shortLabel": "競爭核心",
@@ -34,6 +34,13 @@
       "shortLabel": "確認卡",
       "desc": "資訊確認模板",
       "url": "https://wolfhuang0105.github.io/ET-InfoTemplates-AfterDemos/"
+    },
+    {
+      "icon": "💡",
+      "label": "成交後 關鍵提醒",
+      "shortLabel": "成交提醒",
+      "desc": "環測/登入/開課提醒模板",
+      "url": "https://wolfhuang0105.github.io/ET-Reminder-AfterDeal/"
     }
   ]
 }
