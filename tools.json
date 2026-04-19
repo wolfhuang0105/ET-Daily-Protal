@@ -13,16 +13,14 @@
       "shortLabel": "競爭核心",
       "desc": "對照表與競品分析",
       "url": "https://wolfhuang0105.github.io/ET-KeyValues"
-    },
-	,
+    },	
     {
       "icon": "🔍",
       "label": "Demo 老師評比分析",
       "shortLabel": "Demo老師",
       "desc": "快速查找 & 評比分析",
       "url": "https://wolfhuang0105.github.io/ET-KeyValues"
-    },
-	
+    },	
     {
       "icon": "📋",
       "label": "Demo 通知",
