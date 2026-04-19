@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ETalking 業務工具箱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F2F8;--sf:#fff;--sf2:#F5F6FA;
+  --t1:#1C2340;--t2:#6B7A99;--t3:#9AA3B8;
+  --bd:#DDE2F0;--bd2:#C5CFEA;
+  --blue:#4F6EF7;--bbg:#EEF2FF;--blue2:#3A5AE8;--blt:#C5D5FF;
+  --green:#1E8449;--gbg:#EAFAF1;
+  --amber:#B45309;--abg:#FEF3C7;--alt:#FDE68A;
+  --red:#B91C1C;--rbg:#FEF2F2;--rlt:#FECACA;
+  --sidebar-w:200px;
+  --sidebar-col-w:56px;
+  --topbar-h:52px;
+  --r:8px;--rlg:12px;
+  --sb-ease:.22s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+/* 行動瀏覽器 URL bar 會動態佔高度，用 dvh 解決；不支援 dvh 的瀏覽器落回 vh */
+body{
+  font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;
+  display:flex;flex-direction:column;min-height:0;
+  height:100vh;
+  height:100dvh;
+}
+
+/* ── topbar ── */
+.topbar{height:var(--topbar-h);background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{width:28px;height:28px;border-radius:6px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:-.03em}
+.brand-name{font-size:13px;font-weight:700;color:var(--t1);letter-spacing:.03em}
+.brand-sub{font-size:10px;color:var(--t3);font-weight:400;margin-left:2px}
+.brand-ver{font-size:9px;font-weight:700;color:var(--blue);background:var(--bbg);border:1px solid var(--blt);padding:1px 6px;border-radius:10px;margin-left:6px;letter-spacing:.03em;vertical-align:middle}
+.clock{font-size:12px;font-weight:500;color:var(--t2);background:var(--sf2);border:1px solid var(--bd);border-radius:20px;padding:5px 13px;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+
+/* ── layout ── */
+.layout{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ══════════════════════════ SIDEBAR ══════════════════════════ */
+.sidebar{
+  width:var(--sidebar-w);background:var(--sf);border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
+  transition:width var(--sb-ease);
+}
+.sidebar.col{width:var(--sidebar-col-w)}
+.sb-head{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 8px;flex-shrink:0}
+.sb-head-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);white-space:nowrap;overflow:hidden;transition:opacity var(--sb-ease),max-width var(--sb-ease);max-width:120px;opacity:1}
+.sidebar.col .sb-head-label{opacity:0;max-width:0}
+.sb-toggle{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--sf2);border:1px solid var(--bd);cursor:pointer;font-size:12px;color:var(--t3);transition:all .12s;user-select:none;line-height:1}
+.sb-toggle:hover{background:var(--bbg);border-color:var(--blt);color:var(--blue)}
+
+.nav-list-wrap{flex:1;overflow-y:auto;min-height:0}
+.nav-list-wrap::-webkit-scrollbar{width:4px}
+.nav-list-wrap::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;
+  border-left:3px solid transparent;
+  transition:background .12s,padding var(--sb-ease),flex-direction var(--sb-ease),align-items var(--sb-ease),gap var(--sb-ease);
+  position:relative;user-select:none;overflow:hidden;
+}
+.nav-item:hover{background:var(--bbg)}
+.nav-item.on{background:var(--bbg);border-left-color:var(--blue)}
+.sidebar.col .nav-item{flex-direction:column;gap:3px;padding:8px 4px;align-items:center}
+.sidebar.col .nav-item.on{border-left-color:var(--blue)}
+.nav-icon{width:30px;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--sf2);border:1px solid var(--bd);transition:all .12s}
+.nav-item.on .nav-icon{background:var(--bbg);border-color:var(--blt)}
+.nav-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sidebar.col .nav-text{display:none}
+.nav-label{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3}
+.nav-item.on .nav-label{color:var(--blue)}
+.nav-desc{font-size:10px;color:var(--t3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-short{display:none;font-size:9px;font-weight:700;color:var(--t2);text-align:center;line-height:1.2;max-width:50px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar.col .nav-short{display:block}
+.nav-item.on .nav-short{color:var(--blue)}
+.nav-item.settings-item{border-top:1px solid var(--bd);flex-shrink:0}
+.nav-item.settings-item.on{background:var(--abg);border-left-color:var(--amber)}
+.nav-item.settings-item.on .nav-label,.nav-item.settings-item.on .nav-short{color:var(--amber)}
+.nav-item.settings-item.on .nav-icon{background:var(--abg);border-color:var(--alt)}
+.sb-footer{padding:8px 10px 12px;border-top:1px solid var(--bd);flex-shrink:0}
+.sb-footer-label{font-size:10px;color:var(--t3);text-align:center;line-height:1.6;white-space:nowrap;overflow:hidden;transition:opacity var(--sb-ease)}
+.sidebar.col .sb-footer-label{opacity:0}
+
+/* ── content ── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;min-width:0;min-height:0}
+.iframe-wrap{flex:1;position:relative;overflow:hidden;min-height:0}
+#iframe-container{width:100%;height:100%;position:relative}
+.tool-iframe{position:absolute;inset:0;width:100%;height:100%;border:none;display:none;background:var(--sf)}
+.tool-iframe.on{display:block}
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--t3)}
+.empty-state.hidden{display:none}
+.es-icon{font-size:40px;opacity:.4}
+.es-title{font-size:14px;font-weight:600;color:var(--t2)}
+.es-sub{font-size:12px;color:var(--t3);text-align:center;line-height:1.7;max-width:240px}
+.iframe-loading{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue) 0%,var(--blt) 100%);transform-origin:left;transform:scaleX(0);transition:transform .4s ease;opacity:0;z-index:5}
+.iframe-loading.active{opacity:1;animation:loadbar 1.2s ease-in-out infinite alternate}
+@keyframes loadbar{from{transform:scaleX(.1)}to{transform:scaleX(.9)}}
+
+/* tab bar */
+.tab-bar{height:38px;background:var(--sf2);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:6px;flex-shrink:0;overflow-x:auto}
+.tab-bar::-webkit-scrollbar{height:0}
+.tab-bar-label{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-right:4px;flex-shrink:0}
+.tab-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;color:var(--t2);background:var(--sf);border:1px solid var(--bd);cursor:pointer;transition:all .12s;white-space:nowrap;flex-shrink:0}
+.tab-chip:hover{border-color:var(--bd2);color:var(--t1)}
+.tab-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.open-btn{margin-left:auto;padding:4px 12px;border-radius:var(--r);font-size:11px;font-weight:500;color:var(--t2);background:var(--sf);border:1px solid var(--bd);cursor:pointer;transition:all .12s;font-family:'Noto Sans TC',sans-serif;text-decoration:none;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.open-btn:hover{background:var(--bbg);color:var(--blue);border-color:var(--blt)}
+
+/* ══════════════════════════ SETTINGS PANEL (改為獨立 layer，不再嵌在 iframe-wrap 裡) ══════════════════════════ */
+.settings-panel{
+  position:absolute;inset:0;background:var(--bg);
+  display:none;flex-direction:column;z-index:20;
+  overflow:hidden;min-height:0;
+}
+.settings-panel.on{display:flex}
+
+/* sticky header：長頁面捲動時固定 */
+.sp-header{
+  padding:12px 20px;border-bottom:1px solid var(--bd);background:var(--sf);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  gap:14px;
+}
+.sp-title{font-size:13px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:8px;line-height:1.4}
+.sp-subtitle{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4}
+.sp-close{width:28px;height:28px;border-radius:var(--r);background:var(--sf2);border:1px solid var(--bd);cursor:pointer;color:var(--t2);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .12s;line-height:1;flex-shrink:0;font-family:sans-serif}
+.sp-close:hover{background:var(--rbg);border-color:var(--rlt);color:var(--red)}
+
+/* mode tabs */
+.sp-tabs{display:flex;background:var(--sf);border-bottom:1px solid var(--bd);padding:0 20px;gap:2px;flex-shrink:0}
+.sp-tab{padding:9px 18px;font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;user-select:none;white-space:nowrap}
+.sp-tab:hover{color:var(--t1)}
+.sp-tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.sp-tab-badge{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--sf2);color:var(--t3);letter-spacing:.03em}
+.sp-tab.on .sp-tab-badge{background:var(--bbg);color:var(--blue)}
+
+/* body：這是真正的 scroll container
+   重要：padding 不能放這裡，否則內部 sticky 會卡在 padding 下緣 */
+.sp-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  min-height:0;
+  display:none;flex-direction:column;
+  /* 用 -webkit-overflow-scrolling 讓 iOS 慣性滾動更順 */
+  -webkit-overflow-scrolling:touch;
+}
+.sp-body.on{display:flex}
+.sp-body::-webkit-scrollbar{width:6px}
+.sp-body::-webkit-scrollbar-track{background:transparent}
+.sp-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:6px}
+.sp-body::-webkit-scrollbar-thumb:hover{background:var(--t3)}
+
+/* sticky 操作列：現在能正確貼到 sp-body 頂端 */
+.sp-action-bar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--sf);border-bottom:1px solid var(--bd);
+  padding:12px 20px;
+  position:sticky;top:0;z-index:5;
+  flex-shrink:0;
+}
+
+/* 其他區塊用這層 wrapper 補回左右 padding 與上下間距 */
+.sp-body-inner{
+  padding:14px 20px 40px;
+  display:flex;flex-direction:column;gap:14px;
+}
+
+.sp-info{background:var(--abg);border:1px solid var(--alt);border-radius:var(--r);padding:10px 14px;font-size:11px;color:var(--amber);line-height:1.7}
+.sp-info strong{font-weight:700}
+.sp-info code{font-family:'JetBrains Mono',monospace;font-size:10px;background:#FFF7ED;padding:1px 5px;border-radius:3px;color:#92400E}
+
+.sp-section{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rlg);overflow:hidden}
+.sp-section-head{padding:10px 16px;border-bottom:1px solid var(--bd);font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px;background:var(--sf2);flex-wrap:wrap}
+.sp-section-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+/* global actions bar 已在 sp-body 區塊定義 */
+.sp-btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bd);font-family:'Noto Sans TC',sans-serif;transition:all .12s;background:var(--sf);color:var(--t2);white-space:nowrap;line-height:1.3}
+.sp-btn:hover{background:var(--bbg);border-color:var(--blt);color:var(--blue)}
+.sp-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sp-btn.primary:hover{background:var(--blue2);border-color:var(--blue2)}
+.sp-btn.danger{color:var(--red);border-color:var(--rlt)}
+.sp-btn.danger:hover{background:var(--rbg);border-color:#FCA5A5;color:var(--red)}
+.sp-btn.small{padding:4px 10px;font-size:11px}
+.sp-status{font-size:11px;color:var(--t3);margin-left:auto;line-height:1.3}
+.sp-status.ok{color:var(--green)}
+.sp-status.err{color:var(--red)}
+
+/* ── FORM MODE：工具卡片 ── */
+.tool-cards{display:flex;flex-direction:column;gap:10px}
+.tool-card{
+  background:var(--sf);border:1px solid var(--bd);border-radius:var(--rlg);
+  overflow:hidden;transition:border-color .12s,box-shadow .12s;
+}
+.tool-card:hover{border-color:var(--bd2)}
+.tool-card.active-icon-target{border-color:var(--blue);box-shadow:0 0 0 3px var(--bbg)}
+
+.tc-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--sf2);border-bottom:1px solid var(--bd)}
+.tc-idx{font-size:10px;font-weight:700;color:var(--t3);font-family:'JetBrains Mono',monospace;background:var(--sf);border:1px solid var(--bd);padding:2px 7px;border-radius:10px;flex-shrink:0}
+.tc-preview{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.tc-preview-icon{width:28px;height:28px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.tc-preview-text{min-width:0;flex:1}
+.tc-preview-label{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-preview-desc{font-size:10px;color:var(--t3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-ctrls{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.tc-ctrl{width:26px;height:26px;border-radius:6px;border:1px solid var(--bd);background:var(--sf);color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .12s;line-height:1;font-family:sans-serif}
+.tc-ctrl:hover:not(:disabled){background:var(--bbg);border-color:var(--blt);color:var(--blue)}
+.tc-ctrl:disabled{opacity:.35;cursor:not-allowed}
+.tc-ctrl.del:hover{background:var(--rbg);border-color:var(--rlt);color:var(--red)}
+
+.tc-body{padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.wide{grid-column:1/-1}
+.field-label{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.field-hint{font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0;font-size:10px}
+.field-input{width:100%;padding:7px 10px;font-size:12px;color:var(--t1);background:var(--sf);border:1px solid var(--bd);border-radius:6px;outline:none;font-family:'Noto Sans TC',sans-serif;transition:border-color .12s}
+.field-input:focus{border-color:var(--blue)}
+.field-input.url-input{font-family:'JetBrains Mono',monospace;font-size:11px}
+.field-icon-row{display:flex;gap:6px}
+.field-icon-row .field-input{flex:1;text-align:center;font-size:15px;font-family:'Noto Sans TC',sans-serif}
+.icon-target-btn{padding:0 10px;border-radius:6px;border:1px solid var(--bd);background:var(--sf);color:var(--t2);cursor:pointer;font-size:10px;font-weight:600;white-space:nowrap;transition:all .12s;line-height:1.2}
+.icon-target-btn:hover{background:var(--bbg);border-color:var(--blt);color:var(--blue)}
+.icon-target-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+.add-tool-btn{
+  padding:14px;border:2px dashed var(--bd2);background:transparent;border-radius:var(--rlg);
+  color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.add-tool-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--bbg)}
+
+/* ── JSON MODE ── */
+.json-textarea{width:100%;min-height:360px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.65;color:var(--t1);background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;resize:vertical;outline:none;transition:border-color .12s}
+.json-textarea:focus{border-color:var(--blue)}
+.schema-hint{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 14px}
+.schema-hint pre{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);line-height:1.7;white-space:pre-wrap;word-break:break-all}
+
+/* ── Icon sheet ── */
+.icon-sheet-note{font-size:11px;color:var(--t2);background:var(--bbg);border:1px solid var(--blt);border-radius:var(--r);padding:8px 12px;line-height:1.6}
+.icon-sheet-note strong{color:var(--blue)}
+.icon-sheet-cats{display:flex;flex-direction:column;gap:12px}
+.icon-cat-label{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.icon-grid{display:flex;flex-wrap:wrap;gap:4px}
+.icon-chip{width:34px;height:34px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;background:var(--sf2);border:1px solid var(--bd);transition:all .12s;user-select:none}
+.icon-chip:hover{background:var(--bbg);border-color:var(--blt);transform:scale(1.12)}
+.icon-chip:active{transform:scale(.95)}
+.icon-chip.copied{background:var(--gbg);border-color:#86EFAC}
+.icon-copy-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--t1);color:#fff;font-size:11px;font-weight:500;padding:6px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .15s;z-index:999;white-space:nowrap;max-width:90vw;text-align:center}
+.icon-copy-toast.show{opacity:1}
+
+/* fetch warning banner */
+.fetch-warn{
+  display:none;background:#FEF2F2;border-bottom:1px solid #FECACA;
+  padding:5px 20px;font-size:11px;color:#B91C1C;
+  align-items:center;gap:8px;flex-shrink:0;
+}
+.fetch-warn.on{display:flex}
+.fetch-warn-icon{font-size:13px;flex-shrink:0}
+.fetch-warn-msg{flex:1;line-height:1.5}
+.fetch-warn-msg code{font-family:'JetBrains Mono',monospace;font-size:10px;background:#FEE2E2;padding:1px 5px;border-radius:3px}
+.fetch-warn-close{cursor:pointer;font-size:13px;color:#EF4444;flex-shrink:0;line-height:1;padding:2px 4px;border-radius:4px;transition:background .12s}
+.fetch-warn-close:hover{background:#FECACA}
+
+/* 窄螢幕微調 */
+@media (max-width:640px){
+  .sp-header{padding:10px 14px}
+  .sp-tabs{padding:0 14px}
+  .sp-action-bar{padding:10px 14px;gap:6px}
+  .sp-action-bar .sp-btn{padding:5px 10px;font-size:11px}
+  .sp-body-inner{padding:12px 14px 40px}
+  .tc-body{grid-template-columns:1fr}
+  /* 手機版 sidebar 預設收合顯示更多內容空間，但保留手動切換 */
+  .sp-subtitle{display:none}  /* 副標太長擠壓 header，手機藏起來 */
+  .sp-header{padding:8px 12px}
+  .sp-title{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">ET</div>
+    <div>
+      <span class="brand-name">ETalking</span>
+      <span class="brand-sub">業務工具箱</span>
+      <span class="brand-ver" id="brand-ver">v?</span>
+    </div>
+  </div>
+  <div class="clock" id="clock">--:--:--</div>
+</div>
+
+<div class="fetch-warn" id="fetch-warn">
+  <span class="fetch-warn-icon">⚠️</span>
+  <span class="fetch-warn-msg" id="fetch-warn-msg"></span>
+  <span class="fetch-warn-close" onclick="document.getElementById('fetch-warn').classList.remove('on')" title="關閉">✕</span>
+</div>
+
+<div class="layout">
+
+  <div class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <span class="sb-head-label">工具導航</span>
+      <div class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()">‹</div>
+    </div>
+
+    <div class="nav-list-wrap">
+      <div id="nav-list"></div>
+    </div>
+
+    <div class="nav-item settings-item" id="nav-settings" onclick="toggleSettings()">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-text">
+        <span class="nav-label">工具設定</span>
+        <span class="nav-desc">表單 / JSON 管理</span>
+      </div>
+      <span class="nav-short">設定</span>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-footer-label" id="sb-footer-label">ETalking Sales Tools<br>Wolf · 2026</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tab-bar">
+      <span class="tab-bar-label">工具</span>
+      <span id="tab-list"></span>
+      <a class="open-btn" id="open-link" href="#" target="_blank">↗ 另開頁籤</a>
+    </div>
+
+    <div class="iframe-loading" id="loading-bar"></div>
+
+    <div class="iframe-wrap">
+      <div class="empty-state hidden" id="empty-state">
+        <div class="es-icon">🛠</div>
+        <div class="es-title">選擇左側工具開始使用</div>
+        <div class="es-sub" id="es-sub-text"></div>
+      </div>
+      <div id="iframe-container"></div>
+
+      <!-- SETTINGS PANEL -->
+      <div class="settings-panel" id="settings-panel">
+        <div class="sp-header">
+          <div>
+            <div class="sp-title">⚙️ 工具設定 <span id="sp-title-ver" style="font-size:10px;font-weight:500;color:var(--t3);letter-spacing:.03em;margin-left:4px"></span></div>
+            <div class="sp-subtitle">表單 / JSON 雙向同步｜修改後點「套用設定」即時生效，重整頁面後依然保留</div>
+          </div>
+          <div class="sp-close" onclick="closeSettings()" title="關閉設定 (Esc)">✕</div>
+        </div>
+
+        <div class="sp-tabs">
+          <div class="sp-tab on" id="tab-form" onclick="switchSpTab('form')">
+            🧩 表單模式
+            <span class="sp-tab-badge" id="tab-form-count">0</span>
+          </div>
+          <div class="sp-tab" id="tab-json" onclick="switchSpTab('json')">
+            { } JSON 進階模式
+          </div>
+        </div>
+
+        <!-- FORM BODY -->
+        <div class="sp-body on" id="sp-body-form">
+
+          <div class="sp-action-bar">
+            <button class="sp-btn primary" onclick="applyFromForm()">✔ 套用設定</button>
+            <button class="sp-btn" onclick="exportJSON()">⬇ 匯出 JSON</button>
+            <button class="sp-btn" onclick="document.getElementById('import-file').click()">⬆ 匯入 JSON</button>
+            <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+            <button class="sp-btn danger" onclick="restoreDefaults()">↺ 恢復預設</button>
+            <span class="sp-status" id="form-status"></span>
+          </div>
+
+          <div class="sp-body-inner">
+
+            <div class="sp-info">
+              <strong>使用說明</strong><br>
+              • 每張卡片代表一個工具，欄位即時更新預覽，但需按「套用設定」才會正式生效。<br>
+              • 要改 icon：下方「Icon 大補帖」點一下，會自動填入目前「選取卡片」的 icon 欄（卡片右側有「選此卡」按鈕切換）。<br>
+              • 卡片右上 ▲▼ 調整順序、✕ 刪除、下方虛線框新增工具。
+            </div>
+
+            <div class="sp-section">
+              <div class="sp-section-head">
+                🧩 工具卡片
+                <span style="font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0;font-size:10px">共 <span id="card-count-inline">0</span> 項</span>
+              </div>
+              <div class="sp-section-body">
+                <div class="tool-cards" id="tool-cards"></div>
+                <button class="add-tool-btn" onclick="addTool()">+ 新增工具</button>
+              </div>
+            </div>
+
+            <div class="sp-section">
+              <div class="sp-section-head">
+                🎨 Icon 大補帖
+                <span class="field-hint">點擊注入「選取卡片」的 icon 欄</span>
+              </div>
+              <div class="sp-section-body">
+                <div class="icon-sheet-note" id="icon-sheet-note"></div>
+                <div class="icon-sheet-cats" id="icon-sheet-form"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- JSON BODY -->
+        <div class="sp-body" id="sp-body-json">
+
+          <div class="sp-action-bar">
+            <button class="sp-btn primary" onclick="applyJSON()">✔ 套用設定</button>
+            <button class="sp-btn" onclick="formatJSON()">🗂 格式化</button>
+            <button class="sp-btn" onclick="syncJsonFromForm()">↻ 由表單同步</button>
+            <button class="sp-btn" onclick="exportJSON()">⬇ 匯出</button>
+            <button class="sp-btn" onclick="document.getElementById('import-file-json').click()">⬆ 匯入</button>
+            <input type="file" id="import-file-json" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+            <button class="sp-btn danger" onclick="restoreDefaults()">↺ 恢復預設</button>
+            <span class="sp-status" id="apply-status"></span>
+          </div>
+
+          <div class="sp-body-inner">
+
+            <div class="sp-info">
+              <strong>靜態預設 JSON</strong>（出廠設定）來自同級目錄的 <code>tools.json</code>，修改該檔即可更新預設值。<br>
+              自訂設定儲存於瀏覽器 <code>localStorage</code>（優先於 tools.json）。<br>
+              「恢復預設」會清除 localStorage 並重新套用 tools.json 的內容。
+            </div>
+
+            <div class="sp-section">
+              <div class="sp-section-head">📝 目前設定（可直接編輯）</div>
+              <div class="sp-section-body">
+                <textarea class="json-textarea" id="json-textarea" spellcheck="false"></textarea>
+                <div class="sp-status" id="import-status"></div>
+              </div>
+            </div>
+
+            <div class="sp-section">
+              <div class="sp-section-head">📋 JSON 欄位說明</div>
+              <div class="sp-section-body">
+                <div class="schema-hint"><pre>{
+  "tools": [
+    {
+      "icon":       "📞",         // 側欄圖示（emoji）
+      "label":      "通話 與 KYC", // 側欄主標題 / Tab 名稱
+      "shortLabel": "Call",       // ★ 收合時顯示的簡稱
+      "desc":       "模板產生器", // 側欄副標題
+      "url":        "https://..."  // 工具頁面 URL
+    }
+  ]
+}</pre></div>
+              </div>
+            </div>
+
+            <div class="sp-section">
+              <div class="sp-section-head">🎨 Icon 大補帖 <span class="field-hint">點擊複製到剪貼簿</span></div>
+              <div class="sp-section-body">
+                <div class="icon-sheet-cats" id="icon-sheet-json"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /settings-panel -->
+    </div><!-- /iframe-wrap -->
+  </div><!-- /content -->
+</div><!-- /layout -->
+
+<div class="icon-copy-toast" id="copy-toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   ★★★ 版本號集中管理 ★★★
+   改版本只要改這一個變數，以下位置會自動同步：
+   - <title>
+   - topbar 品牌徽章
+   - sidebar footer
+   - 設定面板標題
+════════════════════════════════════════════ */
+const APP_VERSION = 'v23';
+const APP_NAME    = 'ETalking 業務工具箱';
+const APP_YEAR    = '2026';
+const APP_AUTHOR  = 'Wolf';
+
+/* ════════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════════ */
+const STATIC_JSON_PATH = './tools.json';
+const LS_KEY = 'et_tools_config';
+const LS_SB  = 'et_sidebar_col';
+
+let DEFAULT_TOOLS = null;
+let CONFIG        = null;
+let current       = 0;
+let spOpen        = false;
+let spTab         = 'form';
+let sbCol         = localStorage.getItem(LS_SB) === '1';
+let iconTargetIdx = 0;           // icon 大補帖作用的卡片索引
+const loaded      = new Set();
+
+/* ══════════════════ 版本號同步 ══════════════════ */
+function applyVersion() {
+  document.title                                = `${APP_NAME} ${APP_VERSION}`;
+  document.getElementById('brand-ver').textContent = APP_VERSION;
+  document.getElementById('sb-footer-label').innerHTML =
+    `ETalking Sales Tools ${APP_VERSION}<br>${APP_AUTHOR} · ${APP_YEAR}`;
+  document.getElementById('sp-title-ver').textContent = APP_VERSION;
+}
+
+function loadConfigFromLS() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && Array.isArray(p.tools) && p.tools.length) return p;
+    }
+  } catch(e) {}
+  return null;
+}
+function saveConfig(cfg) { localStorage.setItem(LS_KEY, JSON.stringify(cfg, null, 2)) }
+
+/* clock */
+function tick() {
+  const now = new Date(), p = n => String(n).padStart(2,'0');
+  document.getElementById('clock').textContent =
+    `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+}
+tick(); setInterval(tick, 1000);
+
+/* ══════════════════ SIDEBAR ══════════════════ */
+function toggleSidebar() {
+  sbCol = !sbCol;
+  localStorage.setItem(LS_SB, sbCol ? '1' : '0');
+  applySB();
+}
+function applySB() {
+  const sb  = document.getElementById('sidebar');
+  const btn = document.getElementById('sb-toggle');
+  sb.classList.toggle('col', sbCol);
+  btn.textContent = sbCol ? '›' : '‹';
+  btn.title = sbCol ? '展開側欄' : '收合側欄';
+}
+
+/* ══════════════════ RENDER (主畫面) ══════════════════ */
+function render() {
+  const tools = CONFIG.tools;
+
+  document.getElementById('nav-list').innerHTML = tools.map((t,i) => `
+    <div class="nav-item${i===current?' on':''}" onclick="switchTool(${i})">
+      <div class="nav-icon">${escHtml(t.icon)}</div>
+      <div class="nav-text">
+        <span class="nav-label">${escHtml(t.label)}</span>
+        <span class="nav-desc">${escHtml(t.desc||'')}</span>
+      </div>
+      <span class="nav-short">${escHtml(t.shortLabel||t.label)}</span>
+    </div>`).join('');
+
+  document.getElementById('tab-list').innerHTML = tools.map((t,i) =>
+    `<span class="tab-chip${i===current?' on':''}" onclick="switchTool(${i})">${escHtml(t.label)}</span>`
+  ).join('');
+
+  document.getElementById('iframe-container').innerHTML = tools.map((t,i) => `
+    <iframe
+      class="tool-iframe${i===current?' on':''}"
+      id="iframe-${i}"
+      src="${i===0?escAttr(t.url):''}"
+      data-src="${escAttr(t.url)}"
+      title="${escAttr(t.label)}"></iframe>`).join('');
+
+  loaded.clear();
+  if (tools.length) loaded.add(0);
+  const f0 = document.getElementById('iframe-0');
+  if (f0) f0.onload = hideLoading;
+
+  updateOpenLink();
+  document.getElementById('es-sub-text').textContent = tools.map(t=>t.label).join('、');
+  applySB();
+}
+
+function updateOpenLink() {
+  const t = CONFIG.tools[current];
+  document.getElementById('open-link').href = t ? t.url : '#';
+}
+
+function switchTool(idx) {
+  if (spOpen) closeSettings();
+  if (idx === current) return;
+  current = idx;
+  document.querySelectorAll('#nav-list .nav-item').forEach((el,i) => el.classList.toggle('on', i===idx));
+  document.querySelectorAll('#tab-list .tab-chip').forEach((el,i) => el.classList.toggle('on', i===idx));
+  updateOpenLink();
+  const iframe = document.getElementById('iframe-'+idx);
+  if (iframe && !loaded.has(idx)) {
+    showLoading();
+    iframe.src = iframe.dataset.src;
+    iframe.onload = hideLoading;
+    loaded.add(idx);
+  }
+  document.querySelectorAll('.tool-iframe').forEach((f,i) => f.classList.toggle('on', i===idx));
+}
+
+function showLoading() { document.getElementById('loading-bar').classList.add('active') }
+function hideLoading()  { document.getElementById('loading-bar').classList.remove('active') }
+
+/* html helpers */
+function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+function escAttr(s) { return escHtml(s) }
+
+/* ══════════════════ SETTINGS ══════════════════ */
+function toggleSettings() { spOpen ? closeSettings() : openSettings() }
+function openSettings() {
+  spOpen = true;
+  document.getElementById('settings-panel').classList.add('on');
+  document.getElementById('nav-settings').classList.add('on');
+  // 兩個模式都從 CONFIG 重建
+  renderForm();
+  document.getElementById('json-textarea').value = JSON.stringify(CONFIG, null, 2);
+  clearSt();
+}
+function closeSettings() {
+  spOpen = false;
+  document.getElementById('settings-panel').classList.remove('on');
+  document.getElementById('nav-settings').classList.remove('on');
+}
+function clearSt() {
+  setSt('apply-status','','');
+  setSt('import-status','','');
+  setSt('form-status','','');
+}
+function setSt(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sp-status'+(type?' '+type:'');
+}
+
+function switchSpTab(tab) {
+  spTab = tab;
+  document.getElementById('tab-form').classList.toggle('on', tab==='form');
+  document.getElementById('tab-json').classList.toggle('on', tab==='json');
+  document.getElementById('sp-body-form').classList.toggle('on', tab==='form');
+  document.getElementById('sp-body-json').classList.toggle('on', tab==='json');
+  // 切換到 JSON 時，用當前表單狀態重建 JSON
+  if (tab === 'json') syncJsonFromForm();
+  // 切換到表單時，嘗試用 JSON 更新表單（若 JSON 有效）
+  if (tab === 'form') {
+    try {
+      const parsed = JSON.parse(document.getElementById('json-textarea').value);
+      if (parsed?.tools?.length) {
+        CONFIG = parsed;
+        renderForm();
+      }
+    } catch(e) { /* JSON 無效就保留目前表單狀態 */ }
+  }
+  clearSt();
+}
+
+/* ══════════════════ FORM MODE ══════════════════ */
+function renderForm() {
+  const tools = CONFIG.tools || [];
+  const wrap = document.getElementById('tool-cards');
+
+  wrap.innerHTML = tools.map((t, i) => toolCardHtml(t, i, tools.length)).join('');
+  document.getElementById('card-count-inline').textContent = tools.length;
+  document.getElementById('tab-form-count').textContent = tools.length;
+
+  // 確認 iconTargetIdx 在範圍內
+  if (iconTargetIdx >= tools.length) iconTargetIdx = Math.max(0, tools.length - 1);
+  updateIconTargetUI();
+}
+
+function toolCardHtml(t, i, total) {
+  const isTarget = i === iconTargetIdx;
+  return `
+  <div class="tool-card${isTarget?' active-icon-target':''}" data-idx="${i}">
+    <div class="tc-head">
+      <span class="tc-idx">#${String(i+1).padStart(2,'0')}</span>
+      <div class="tc-preview">
+        <div class="tc-preview-icon" id="tc-prev-icon-${i}">${escHtml(t.icon)}</div>
+        <div class="tc-preview-text">
+          <div class="tc-preview-label" id="tc-prev-label-${i}">${escHtml(t.label||'（未命名）')}</div>
+          <div class="tc-preview-desc" id="tc-prev-desc-${i}">${escHtml(t.desc||'')}</div>
+        </div>
+      </div>
+      <div class="tc-ctrls">
+        <button class="tc-ctrl" onclick="moveCard(${i},-1)" ${i===0?'disabled':''} title="上移">▲</button>
+        <button class="tc-ctrl" onclick="moveCard(${i},1)"  ${i===total-1?'disabled':''} title="下移">▼</button>
+        <button class="tc-ctrl del" onclick="deleteCard(${i})" title="刪除">✕</button>
+      </div>
+    </div>
+    <div class="tc-body">
+      <div class="field">
+        <label class="field-label">Icon <span class="field-hint">emoji</span></label>
+        <div class="field-icon-row">
+          <input class="field-input" type="text" maxlength="4" value="${escAttr(t.icon)}"
+                 oninput="onFieldInput(${i},'icon',this.value)" placeholder="📞">
+          <button class="icon-target-btn${isTarget?' active':''}" onclick="setIconTarget(${i})"
+                  title="將 Icon 大補帖的點擊注入此卡片">
+            ${isTarget?'✓ 已選取':'選此卡'}
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Label <span class="field-hint">主標題</span></label>
+        <input class="field-input" type="text" value="${escAttr(t.label)}"
+               oninput="onFieldInput(${i},'label',this.value)" placeholder="通話 與 KYC">
+      </div>
+      <div class="field">
+        <label class="field-label">Short Label <span class="field-hint">收合時顯示</span></label>
+        <input class="field-input" type="text" value="${escAttr(t.shortLabel||'')}"
+               oninput="onFieldInput(${i},'shortLabel',this.value)" placeholder="Call">
+      </div>
+      <div class="field">
+        <label class="field-label">Desc <span class="field-hint">副標題</span></label>
+        <input class="field-input" type="text" value="${escAttr(t.desc||'')}"
+               oninput="onFieldInput(${i},'desc',this.value)" placeholder="模板產生器">
+      </div>
+      <div class="field wide">
+        <label class="field-label">URL <span class="field-hint">工具頁面網址</span></label>
+        <input class="field-input url-input" type="url" value="${escAttr(t.url||'')}"
+               oninput="onFieldInput(${i},'url',this.value)" placeholder="https://...">
+      </div>
+    </div>
+  </div>`;
+}
+
+function onFieldInput(i, key, val) {
+  if (!CONFIG.tools[i]) return;
+  CONFIG.tools[i][key] = val;
+  // 即時更新卡片預覽（不重建整張卡，避免 input 失焦）
+  if (key === 'icon')  document.getElementById(`tc-prev-icon-${i}`).textContent  = val;
+  if (key === 'label') document.getElementById(`tc-prev-label-${i}`).textContent = val || '（未命名）';
+  if (key === 'desc')  document.getElementById(`tc-prev-desc-${i}`).textContent  = val;
+}
+
+function setIconTarget(i) {
+  iconTargetIdx = i;
+  updateIconTargetUI();
+}
+function updateIconTargetUI() {
+  document.querySelectorAll('.tool-card').forEach((card, i) => {
+    card.classList.toggle('active-icon-target', i === iconTargetIdx);
+  });
+  document.querySelectorAll('.icon-target-btn').forEach((btn, i) => {
+    const on = i === iconTargetIdx;
+    btn.classList.toggle('active', on);
+    btn.textContent = on ? '✓ 已選取' : '選此卡';
+  });
+  const note = document.getElementById('icon-sheet-note');
+  const t = CONFIG.tools[iconTargetIdx];
+  if (t) {
+    note.innerHTML = `點擊下方任一 icon，將自動套用到 <strong>#${String(iconTargetIdx+1).padStart(2,'0')} ${escHtml(t.label||'（未命名）')}</strong> 的 icon 欄位`;
+  } else {
+    note.innerHTML = `目前沒有選取的卡片`;
+  }
+}
+
+function moveCard(i, dir) {
+  const arr = CONFIG.tools;
+  const j = i + dir;
+  if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  // 調整 iconTarget 以跟著卡片
+  if      (iconTargetIdx === i) iconTargetIdx = j;
+  else if (iconTargetIdx === j) iconTargetIdx = i;
+  renderForm();
+}
+
+function deleteCard(i) {
+  const t = CONFIG.tools[i];
+  if (!confirm(`確定刪除「${t.label || '未命名'}」？`)) return;
+  CONFIG.tools.splice(i, 1);
+  if (iconTargetIdx >= CONFIG.tools.length) iconTargetIdx = Math.max(0, CONFIG.tools.length - 1);
+  renderForm();
+  setSt('form-status', '✔ 已從表單移除，點「套用設定」才會生效', 'ok');
+}
+
+function addTool() {
+  CONFIG.tools.push({
+    icon: '🔧',
+    label: '新工具',
+    shortLabel: '新',
+    desc: '說明',
+    url: 'https://'
+  });
+  iconTargetIdx = CONFIG.tools.length - 1;
+  renderForm();
+  setSt('form-status', '✔ 已新增，請填寫欄位後「套用設定」', 'ok');
+  // 捲動到新增的卡片
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.tool-card');
+    const last = cards[cards.length - 1];
+    if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 50);
+}
+
+function applyFromForm() {
+  // 驗證：至少 1 張卡、url 非空
+  if (!CONFIG.tools.length) {
+    setSt('form-status', '✘ 至少需要一個工具', 'err');
+    return;
+  }
+  for (let i = 0; i < CONFIG.tools.length; i++) {
+    const t = CONFIG.tools[i];
+    if (!t.label?.trim()) { setSt('form-status', `✘ 第 ${i+1} 張卡片的 label 為空`, 'err'); return; }
+    if (!t.url?.trim())   { setSt('form-status', `✘ 第 ${i+1} 張卡片的 url 為空`, 'err'); return; }
+  }
+  current = 0;
+  saveConfig(CONFIG);
+  render();
+  // 同步 JSON textarea
+  document.getElementById('json-textarea').value = JSON.stringify(CONFIG, null, 2);
+  setSt('form-status', '✔ 已套用並儲存', 'ok');
+}
+
+/* ══════════════════ JSON MODE ══════════════════ */
+function formatJSON() {
+  const ta = document.getElementById('json-textarea');
+  try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); setSt('apply-status','✔ 格式化完成','ok') }
+  catch(e) { setSt('apply-status','✘ JSON 格式錯誤','err') }
+}
+
+function applyJSON() {
+  let parsed;
+  try { parsed = JSON.parse(document.getElementById('json-textarea').value) }
+  catch(e) { setSt('apply-status','✘ JSON 格式錯誤，請檢查','err'); return }
+  if (!parsed?.tools?.length) { setSt('apply-status','✘ 缺少 tools 陣列或為空','err'); return }
+  CONFIG = parsed; current = 0;
+  saveConfig(CONFIG); render();
+  // 同步表單
+  renderForm();
+  setSt('apply-status','✔ 已套用並儲存（表單已同步）','ok');
+}
+
+function syncJsonFromForm() {
+  document.getElementById('json-textarea').value = JSON.stringify(CONFIG, null, 2);
+  setSt('apply-status','✔ 已從表單同步到 JSON','ok');
+}
+
+function restoreDefaults() {
+  if (!confirm('確定要恢復預設工具設定？自訂設定將被清除。')) return;
+  localStorage.removeItem(LS_KEY);
+  CONFIG = JSON.parse(JSON.stringify(DEFAULT_TOOLS));
+  current = 0;
+  iconTargetIdx = 0;
+  render();
+  renderForm();
+  document.getElementById('json-textarea').value = JSON.stringify(CONFIG, null, 2);
+  setSt(spTab==='json'?'apply-status':'form-status', '✔ 已恢復預設設定', 'ok');
+}
+
+function exportJSON() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(CONFIG,null,2)],{type:'application/json'}));
+  a.download = `et-tools-config-${APP_VERSION}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importJSON(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  const statusId = spTab==='json' ? 'import-status' : 'form-status';
+  reader.onload = ev => {
+    try {
+      const p = JSON.parse(ev.target.result);
+      if (!p?.tools?.length) { setSt(statusId,'✘ 格式不符，缺少 tools 陣列','err'); return }
+      document.getElementById('json-textarea').value = JSON.stringify(p, null, 2);
+      // 直接套用到 CONFIG（但不存 localStorage，等使用者按套用）
+      CONFIG = p;
+      renderForm();
+      setSt(statusId,'✔ 已載入，請檢查後點「套用設定」儲存','ok');
+    } catch(err) { setSt(statusId,'✘ 檔案 JSON 格式錯誤','err') }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ══════════════════ ICON 大補帖 ══════════════════ */
+const ICON_CATS = [
+  {cat:'📞 通話 / 銷售', icons:['📞','📱','☎️','📲','🤙','💬','🗣️','👂','📣','📢','🎙️','🔔','🔕','📡']},
+  {cat:'📋 文件 / 資料', icons:['📋','📄','📃','📑','🗒️','🗂️','📁','📂','🗃️','📊','📈','📉','📝','✏️','🖊️','🖋️']},
+  {cat:'✅ 確認 / 進度', icons:['✅','☑️','✔️','🔖','🏷️','🎯','🚩','🏁','⭐','🌟','💡','🔑','🗝️','🔓','🔒']},
+  {cat:'👤 人員 / 角色', icons:['👤','👥','🧑‍💼','👨‍💼','👩‍💼','🎓','🧑‍🏫','👨‍🏫','👶','🧒','👦','👧','🤝']},
+  {cat:'🏫 課程 / 教育', icons:['🏫','📚','📖','📓','📒','📔','📗','📘','📙','🖍️','🖌️','🎨','🔬','🔭','🧩','🎓','🏆']},
+  {cat:'💰 金錢 / 方案', icons:['💰','💵','💴','💸','💳','🏦','💎','🛒','🎁','🎀','🏷️','📦','🛍️','💼','🤑','🪙']},
+  {cat:'⚙️ 設定 / 工具', icons:['⚙️','🔧','🔨','🛠️','🔩','🪛','🪚','🖥️','💻','🖨️','⌨️','🖱️','📺','📷','🎥','🔍','🔎']},
+  {cat:'🌐 網路 / 連結', icons:['🌐','🔗','📎','🖇️','📌','📍','🗺️','🏠','🏢','🌍','🌏','🌎','✈️','🚀','📮']},
+  {cat:'🎉 狀態 / 心情', icons:['🎉','🎊','🥳','😊','😃','🤩','🙌','👏','💪','🫶','❤️','🧡','💛','💚','💙','💜','⚡','🔥','💫','✨','🌈']}
+];
+
+function iconSheetHtml(mode) {
+  // mode: 'form' 注入, 'json' 複製
+  return ICON_CATS.map(c => `
+    <div>
+      <div class="icon-cat-label">${escHtml(c.cat)}</div>
+      <div class="icon-grid">${c.icons.map(ic =>
+        `<div class="icon-chip" title="${escAttr(ic)}" onclick="onIconClick('${ic}','${mode}',this)">${ic}</div>`
+      ).join('')}</div>
+    </div>`).join('');
+}
+function renderIconSheets() {
+  document.getElementById('icon-sheet-form').innerHTML = iconSheetHtml('form');
+  document.getElementById('icon-sheet-json').innerHTML = iconSheetHtml('json');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const toast = document.getElementById('copy-toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function onIconClick(icon, mode, el) {
+  el.classList.add('copied');
+  setTimeout(() => el.classList.remove('copied'), 600);
+  if (mode === 'form') {
+    const t = CONFIG.tools[iconTargetIdx];
+    if (!t) { showToast('沒有選取的卡片'); return; }
+    t.icon = icon;
+    renderForm();   // 重建以更新該卡 input 與預覽
+    showToast(`已套用 ${icon} 到 #${String(iconTargetIdx+1).padStart(2,'0')} ${t.label||'未命名'}`);
+  } else {
+    // JSON 模式：複製到剪貼簿
+    navigator.clipboard.writeText(icon).then(() => {
+      showToast(`已複製 ${icon}  貼到 JSON 的 "icon" 欄位即可`);
+    }).catch(() => {
+      showToast(`複製失敗，請手動輸入 ${icon}`);
+    });
+  }
+}
+
+/* ══════════════════ 鍵盤快捷 ══════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && spOpen) {
+    closeSettings();
+  }
+});
+
+/* ════════════════════════════════════════════
+   ASYNC INIT
+════════════════════════════════════════════ */
+(async function init() {
+  applyVersion();  // 先套用版本號到 UI
+
+  try {
+    const res = await fetch(STATIC_JSON_PATH);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DEFAULT_TOOLS = await res.json();
+  } catch(e) {
+    const msg = e?.message ?? String(e);
+    const el  = document.getElementById('fetch-warn');
+    document.getElementById('fetch-warn-msg').innerHTML =
+      `無法載入 <code>${STATIC_JSON_PATH}</code>（${escHtml(msg)}）— 已使用內嵌備援設定，工具正常運作。請確認 tools.json 與 index.html 在同一目錄。`;
+    el.classList.add('on');
+    // 內嵌備援
+    DEFAULT_TOOLS = {
+      tools: [
+        { icon:"📞", label:"通話 與 KYC",      shortLabel:"Call",  desc:"模板產生器", url:"https://wolfhuang0105.github.io/ET-CallOut-Templates"       },
+        { icon:"📋", label:"Demo 通知",        shortLabel:"Demo",  desc:"模板產生器", url:"https://wolfhuang0105.github.io/ET-Demo-TeacherFinding"     },
+        { icon:"📊", label:"課程方案",          shortLabel:"方案",  desc:"導航計算機", url:"https://wolfhuang0105.github.io/et-kids-quo-cal/"            },
+        { icon:"✅", label:"Demo後 方案確認卡", shortLabel:"確認卡", desc:"資訊確認模板",url:"https://wolfhuang0105.github.io/ET-InfoTemplates-AfterDemos/" }
+      ]
+    };
+  }
+
+  CONFIG = loadConfigFromLS() ?? JSON.parse(JSON.stringify(DEFAULT_TOOLS));
+
+  render();
+  renderIconSheets();
+})();
+</script>
+</body>
+</html>
