@@ -29,6 +29,13 @@
       "url": "https://wolfhuang0105.github.io/ET-Demo-TeacherFinding"
     },
     {
+      "icon": "💎",
+      "label": "魔法屋亮點介紹",
+      "shortLabel": "魔法屋",
+      "desc": "魔法屋亮點介紹/請大家提供影片連結",
+      "url": "https://wolfhuang0105.github.io/ET-MagicHouse-Promote"
+    },
+    {
       "icon": "📊",
       "label": "課程方案",
       "shortLabel": "方案",
@@ -48,6 +55,13 @@
       "shortLabel": "成交提醒",
       "desc": "環測/登入/開課提醒模板",
       "url": "https://wolfhuang0105.github.io/ET-Reminder-AfterDeal/"
+    },
+    {
+      "icon": "☎️",
+      "label": "Webex檢測",
+      "shortLabel": "測試",
+      "desc": "測試環測",
+      "url": "https://wolfhuang0105.github.io/ET-Webex-Test"
     }
   ]
 }
